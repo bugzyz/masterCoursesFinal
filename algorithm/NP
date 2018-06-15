@@ -1,0 +1,20 @@
+下列算法都是多项式时间内(n^k)[k=1,2,3..]可解的，成为多项式算法，是高效的算法
+• Finding shortest paths in graphs,
+• Minimum spanning trees in graphs,
+• Matchings in bipartite graphs,
+• Maximum increasing subsequences,
+• Maximum flows in networks,
+
+当一个算法复杂度达到指数级别(a^n)或更多，它就很难被使用
+
+----------最小支撑树--------------
+Kruskal’s algorithm-克鲁斯卡尔算法-找最小支撑树
+不断添加邻近的最小边，当形成一个环时选择一个次小边
+
+Prim algorithm-找最小支撑树
+从一个顶点开始，遍历它的邻居找最小边的顶点加入家庭，继续探索家庭附近有最小边的顶点
+
+---------------------------------
+conjunctive normal form (CNF) 合取范式
+
+
