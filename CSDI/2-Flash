@@ -12,10 +12,19 @@ flash的技术特性
 -flash的读/写和擦除操作是不对称的（读/写是以页为单位，擦除是以块为单位）
 -写前必须擦除，每个块的擦除操作是有一定寿命的。
 
+– NOR flash: random access, used for firmware
+– NAND flash: block access, used for mass storage
+
+– SLC: single level cell that encodes a single bit per cell
+– MLC: multi-level cell that encodes multiple bits per cell
+
+
+
+
 =========doubt=========
 1. Why not Battery-Backed DRAM?
 
-=========question=========
+=========my question=========
 1. Why does F2FS try to reduce the effects of random write? What techniques does it use?
 The frequent random writes as well as the flush operations will increase the I/O latency because of the erase-before-write requirement, a inherent requirement of flash memory, furthermore, reduce the device lifetime.
 The paper uses the log-structured file system approach, in addition, the copy-on-write strategy to efficiently mitigate those problems,
