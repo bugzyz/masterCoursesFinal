@@ -1,0 +1,28 @@
+Why Flash Now?
+- Non-volatile storage
+– No mechanical components
+∗ Moore’s law does not apply to seeks
+– Inexpensive and getting cheaper
+– Potential for significant power savings
+– Real-world performance is much better than in 2006
+
+NAND/NOR - 闪存flash的类型
+
+flash的技术特性
+-flash的读/写和擦除操作是不对称的（读/写是以页为单位，擦除是以块为单位）
+-写前必须擦除，每个块的擦除操作是有一定寿命的。
+
+=========doubt=========
+1. Why not Battery-Backed DRAM?
+
+=========question=========
+1. Why does F2FS try to reduce the effects of random write? What techniques does it use?
+The frequent random writes as well as the flush operations will increase the I/O latency because of the erase-before-write requirement, a inherent requirement of flash memory, furthermore, reduce the device lifetime.
+The paper uses the log-structured file system approach, in addition, the copy-on-write strategy to efficiently mitigate those problems,
+
+2. What is 'wandering tree' problem? How does F2FS mitigate it?
+The 'wandering tree' problem is cause by the data block updating. When trying to update a data block, it needs to update the direct index block. What's more, the indirect index block has to be updated as well. The recursive updating procedure produce a serial of writes, called 'wandering tree' problem.
+The paper creates the NAT(Node Address Table) to record the location of a specific Node. When we are updating a node, all we should do is to update the node information in the NAT, instead of recursively update those relative indirect node.
+
+3. What is the design rationale of multi-head logging? How does F2FS separate cold/hot data?
+The design rationale of multi-head logging is to provide six logs for writing, which can be adapt to the multiple write streams. F2FS separate the data into hot data, which is directory entry blocks, and cold data, which is data blocks moved by cleaning, cold data blocks specified by users and multimedia file data.
