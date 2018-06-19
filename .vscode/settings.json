@@ -1,0 +1,8 @@
+{
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80,
+    "editor.formatOnSave": true,
+    "clang-format.executable": "/Applications/clang+llvm-5.0.1-final-x86_64-apple-darwin/bin/clang-format",
+    "window.zoomLevel": 1,
+    "extensions.ignoreRecommendations": false,
+}
