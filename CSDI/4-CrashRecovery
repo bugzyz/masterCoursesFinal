@@ -1,0 +1,38 @@
+=========paper(RAMCloud)=========
+RAMCloud's goal: large scale and low latency 
+
+motivation: 
+更加容易scale
+提供更低的latency-将数据存放在内存中
+
+为什么不用Flash，因为DRAM有更低的latency(5-10x)
+DRAM为何用来做储存： DRAM常被用作数据的缓存，但是Cache miss和backing store overhead都让DRAM的潜能无法激发出来。该论文它把所有的数据都置于DRAM中（这样不会出现Cache miss）。
+
+若DRAM断电的话，log等信息不就丢失了吗？RAMCloud给DRAM加入DIMM，能够保证在断电后，使用DIMM电池将数据刷到disk上去。
+
+优缺点：
+log-structure的实现解决了RAMCloud管理replica的策略带来的第一个问题，
+    优点：在于充分利用sequential I/O带宽，避免了高延迟。
+    缺点：需要定期地对log进行cleaning操作。
+
+RAMCloud的重点
+1.Data durability and Logging
+    1.1 data durability:使用disk作为durability
+        -将bakcups存放在不同cluster中，提供快速recovery和写性能
+    1.2 logging:因为logging可以最大限度利用顺序写性能，避免更高的access延时
+        -master的log信息会被RPC到其他backup机器上，一旦log到memory中就返回(可以降低latency)，最后log会被async/batch写入disk，同时master也是其他机器的backup
+        -对于不使用clean的方式来整理log得出object的信息并快速返回，master维护了一个hashtable在内存中而不是写入磁盘来记录每个object的当前值，使master可以快速返回
+        -每台RAMCloud server通过后台进程对log进行clean，然后durable到每台server的disk上
+2.Recovery:磁盘recovery太慢了，RAMCloud选择从backup的内存取数据进行recovery
+    旧方法：
+        step1：让backups将data读入memory，将backup信息发送至新master
+        step2：从各个backup将data读入master的内存中
+    RAMCloud方法：由于都恢复数据到master中，master中的hashTable、带宽都成为瓶颈
+        step1：让backups将data读入memory，将backup信息发送至新master
+        step2：分别将backups中的数据读入不同的master中恢复，充分利用带宽和masters的算力
+        Backup failure：如果master发现backup崩溃的话就将数据写到其他地方
+
+Scatter Log segments
+考虑到backup的热度，所处网络带宽，磁盘读写速度等问题，为了保证segment的放置尽可能的平均，RAMCloud采用了随机化(Randomization)和微调(refinement)相结合的方式来决定log segment的放置问题。它首先随机产生一个list，然后从总挑出一个最佳候选（根据磁盘读写速度等各个因素）。使用随机化，避免了多台master选择相同backup的情况，而随机化仍然会带来分配不均匀的情况，所以就需要微调来去解决这种情况。
+
+=========doubt=========

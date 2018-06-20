@@ -18,11 +18,45 @@ flash的技术特性
 – SLC: single level cell that encodes a single bit per cell
 – MLC: multi-level cell that encodes multiple bits per cell
 
+=========paper(F2FS)=========
+Motivation: flash持续的随机读写性能并不好，寿命缩短
 
+采用顺序写(sequential write)的文件系统：
+- log-structured file system
+- copy-on-write file system
 
+Flash friendly on-disk layout -> align FS GC unit with FTL GC unit,
+Cost-effective index structure -> restrain write propagation,
+Multi-head logging -> cleaning cost reduction, 
+Adaptive logging -> graceful performance degradation in aged condition,
+Roll-forward recovery -> fsync acceleration.
+
+上述的中文：
+-Flash-friendly on-disk layout:文件系统分为superblock(SB),Checkpoint(CP),Segment Info(SIT),Node Address
+
+Table(NAT),Segment Summary Area(SSA),和Main Area六个部分存储,在分配存储块的时候用块做单位,cleaning的时候用section做单位，与FTL操作单元对齐，减少不必要的数据拷贝。
+
+-Cost-effective index structure:解决了wandering tree的问题。
+
+-multi-head logging:有多个log区域，有助于数据冷热分离。
+
+-adaptive logging:使用append-only logging让随机写变顺序写，在内存利用率较高的时候，进行thread logging。
+
+-cleaning:Foreground cleaning(空间不足自动触发)background cleaning(周期执行)
+选择vitcim(greed(FC),cost-benefit(BC))->有效块的确认和迁移(通过SIT确认有效块,然后把块放到page cache里面标记为dirty,不会发送I/O)->发送清理进程(victim section被标记为pre-free section,checkpoint做了后,标记为free)
+
+-Fsync acceleration with roll-forward recovery:对small writes进行优化，降低fsync的延迟(使用specicial降低checkpoint开销)
 
 =========doubt=========
+ppt
 1. Why not Battery-Backed DRAM?
+
+论文
+1. 间接节点是干嘛用的(single/double indirect node)
+2. 为什么要multi-head log?
+be adapted to the multiple write streams.??(我的论文回答)
+论文图evaluation fig.6
+
 
 =========my question=========
 1. Why does F2FS try to reduce the effects of random write? What techniques does it use?
@@ -32,6 +66,10 @@ The paper uses the log-structured file system approach, in addition, the copy-on
 2. What is 'wandering tree' problem? How does F2FS mitigate it?
 The 'wandering tree' problem is cause by the data block updating. When trying to update a data block, it needs to update the direct index block. What's more, the indirect index block has to be updated as well. The recursive updating procedure produce a serial of writes, called 'wandering tree' problem.
 The paper creates the NAT(Node Address Table) to record the location of a specific Node. When we are updating a node, all we should do is to update the node information in the NAT, instead of recursively update those relative indirect node.
+#Wandering tree问题
+
+-wandering tree问题是log-structured文件系统（LFS）特有的一个问题，因为LFS的脏数据是追加更新的，所以如果一个数据块变脏了，那么那个数据块的直接索引块、间接索引块都会变脏（因为索引的地址变脏）。
+-在F2FS中使用NAT表来存储node id和实际物理地址的映射关系，这样一个数据块变脏的时候，只需要更新直接节点块和它的NAT表项。
 
 3. What is the design rationale of multi-head logging? How does F2FS separate cold/hot data?
 The design rationale of multi-head logging is to provide six logs for writing, which can be adapt to the multiple write streams. F2FS separate the data into hot data, which is directory entry blocks, and cold data, which is data blocks moved by cleaning, cold data blocks specified by users and multimedia file data.

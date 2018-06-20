@@ -1,0 +1,14 @@
+未完成
+
+
+Why NVM:
+减少写IO的操作，加入新的一层作为cache可以提升性能。
+
+已存在的硬件的特定顺序写的问题：
+1. 原来我们保证特定顺序的写时使用CLFLUSH来保证内容确实被写入磁盘，但这样会带来CPU需暂停执行CLFLUSH的结果，且是serializes执行。
+2. 会invalidate掉cacheline
+=========paper(PMFS-persistent memory file system)=========
+
+=========doubt=========
+
+=========my question=========
