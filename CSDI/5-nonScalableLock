@@ -1,0 +1,31 @@
+=========paper(nonScalable lock)=========
+1. ticket lock:
+struct spinlock_t{
+    int current_ticket
+    int next_ticket
+}
+
+void spin_lock(lock){
+    int t = atomic_fetch_and_inc(lock->next_ticket)
+    while(t != lock->current_ticket) /* wait */
+}
+
+void spin_unlock(lock){
+    lock->current_ticket++
+}
+
+ticket lock是non scalable lock
+因为对于多核来说，当我们修改ticket时，会对其他核的cache进行invalidate，才能让其他waiter得到最新的ticket值，但也因此增加额外的开销。
+
+一个解决办法
+在while中的忙等待添加一个休眠时间，减少核对新的ticket值的访问
+-虽然可以解决一些在爆炸冲突下的情况
+-但当我们只有少量waiter在等待锁时，会产生不必要的等待
+
+论文推荐使用scalable lock，用来解决因为同一个cacheline产生的冲突：MCS_lock
+MCS_lock:
+    每个waiter持有一个{next: xxx, isLocked: true}，waiter刚拿到锁时，islocked:false，next记录下一个等待锁的人，或者NULL。当用锁的人用完锁了，通过next找到下一个waiter并修改其islocked为unlock。
+    -优点：每个waiter都是在自己的本地变量对锁进行判断是否可锁，省去cache的invalidate麻烦。
+
+=========doubt=========
+1. 为什么ppt中的Ticket和MCS都在core=6时有一个性能下降，NUMA吗？
