@@ -1,0 +1,7 @@
+======paper(transactionalMemory)======
+
+lock-free数据结构用来避免产生如下情况：
+1.priority inversion(倒转): 低优先级进程占有锁导致高优先级进程无法顺利执行
+2.convoying(护航)：当进程取得锁时由于时间片用完或page fault等原因只能暂停，导致其他需要该锁的进程无法顺利执行
+3.deadlock：死锁
+

@@ -1,0 +1,42 @@
+RDMA(Remote Direct Memory Access)
+特性：High speed, low latency & low CPU overhead
+
+1-side: WRITE/READ是单边操作，顾名思义，读/写操作是一方在执行，在实际的通信过程中，WRITE/READ操作是由active即客户端来执行的，而passive即服务器不需要执行任何操作。RDMA WRITE操作中，由客户端把数据从本地buffer中直接push到远程QP的虚拟空间的连续内存块中（物理内存不一定连续），因此需要知道目的地址（remote_addr）和访问权限（remote_key）。RDMA READ操作中，是客户端直接到远程的QP的虚拟空间的连续内存块中获取数据poll到本地目的buffer中，因此需要远程QP的内存地址和访问权限。单边操作多用于批量数据传输。
+
+2-sides: 在RDMA传输中，SEND/RECEIVE是双边操作，即需要通信双方的参与，并且RECEIVE要先于SEND执行，这样对方才能发送数据，当然如果对方不需要发送数据，可以不执行RECEIVE操作，因此该过程和传统通信相似，区别在于RDMA的零拷贝网络技术和内核旁路，延迟低，多用于传输短的控制消息。
+
+=======paper(DrTM)=======
+以往的系统：
+1.scalable的系统，往往意味着更高的performance overhead，并需要很多机器才能达到性能标准
+2.单机的系统，能够达到一般的标准，但是不scalable
+
+TX(分布式的或不是分布式的)大多数都将时间浪费在lock、latching(闭锁)等行为上面
+
+联机事务处理OLTP（on-line transaction processing） 主要是执行基本日常的事务处理，比如数据库记录的增删查改。比如在银行的一笔交易记录，就是一个典型的事务。
+联机分析处理OLAP（On-Line Analytical Processing） 是数据仓库系统的主要应用，支持复杂的分析操作，侧重决策支持，并且提供直观易懂的查询结果。典型的应用就是复杂的动态的报表系统。
+
+针对：大量数据上的OLTP
+
+HTM(Strong atomicity)：当出现冲突时，一个非transactional的操作会无条件abort掉一个transaction的操作。
+RDMA(Strong consistency):1-side的RDMA操作对于本地读取来说是cache coherence的，意即马上能够读取到变化的。
+两者结合后，RDMA操作将abort掉HTM中的transaction
+
+实现consistency control:
+互斥锁的实现：通过1-side RDMA操作中的CAS对spinlock进行拿取或释放
+-remote write
+
+shared lock的实现：通过lease-based protocol实现
+-remote read
+-使用lease时，由于各个机器的时间不同，采用PTP对时间进行同步，并设置一个delta值，让
+    - 是否期满： now > end+delta
+    - 是否无效： now < end-delta
+
+在本地commit的更新由HTM完成，remote的commit的更新由RDMA完成，并使用2PL和HTM保证serializability。
+
+RDMA key-value store-friendly storage:
+采用chaining hashTable。focus on minimizing the lookup cost
+
+=================doubt=================
+1. serializability ? linearizability?
+2. 为什么chaining hashTable适用于当前场景？什么是chaining hashtable？location-based caching？
+3. HTM的语义到底是什么，到底怎么检测到conflict并abort的

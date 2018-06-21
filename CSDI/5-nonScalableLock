@@ -26,6 +26,8 @@ ticket lock是non scalable lock
 MCS_lock:
     每个waiter持有一个{next: xxx, isLocked: true}，waiter刚拿到锁时，islocked:false，next记录下一个等待锁的人，或者NULL。当用锁的人用完锁了，通过next找到下一个waiter并修改其islocked为unlock。
     -优点：每个waiter都是在自己的本地变量对锁进行判断是否可锁，省去cache的invalidate麻烦。
-
+    -缺点：需对现有代码进行改动
+    -为什么linux不使用这类scalable锁：因为这种锁针对的是特殊情况，即多核情况下的。
+    
 =========doubt=========
 1. 为什么ppt中的Ticket和MCS都在core=6时有一个性能下降，NUMA吗？
