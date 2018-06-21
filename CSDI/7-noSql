@@ -1,0 +1,8 @@
+noSql
+-not only sql
+
+CAP：Consistency, Availability, Partitions
+noSql只能满足CAP的其中两个：为了scalable，必须选择partition。另一个大多数选择availability，也就是fault-tolerant。
+
+
+=========paper(bigTable)=========
