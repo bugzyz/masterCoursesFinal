@@ -12,3 +12,23 @@ Why NVM:
 =========doubt=========
 
 =========my question=========
+
+
+
+======、
+byte-addressable
+主要解决内存变成non-volatile怎么正确刷回，原因是因为我们无法保证cpu的cache刷回的顺序
+1.原来的方式，通过clflush来保证它的顺序。
+-但阻塞了cpu的pipeline并导致serializes执行
+-invalidate cacheline
+-没有正确刷到NVM，只是刷到memory controler
+2.提出pm_wbarrier
+-
+
+COW-用来更新数据
+journaling-用来两次写操作来修改metadata
+inplace writes-数据非常小的时候采用直接修改
+
+这篇paper采用的是undo
+undo-
+redo-??

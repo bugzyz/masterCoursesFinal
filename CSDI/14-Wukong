@@ -1,0 +1,33 @@
+======paper======
+高速查寻RDF图
+
+motivation：
+1. 以前join太多
+2. full-history
+3. 关系数据库
+
+one-step-prunning?
+1. 每次将当步得到的结果发送给机器做下一步
+2. 在最后的时候还要将所有步骤得到的结果做一次final join才能够得到结果是否合法
+
+full-history(wukong采用)
+1. 将当前结果加别人发给自己的history发送给别人
+2. 当接收到的结果不满足的话马上将该history prunning掉
+
+储存：
+单个关系：(类型)主语---谓语>---宾语
+spo
+sp dir o1 
+op dir s1
+
+有两种索引：
+p dir s
+p dir o
+wn type student
+
+类型->主语1、主语2、主语3
+type student s1 是
+
+
+主语(谓语)->宾语1、宾语2
+

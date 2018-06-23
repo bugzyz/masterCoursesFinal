@@ -56,6 +56,7 @@ ppt
 2. 为什么要multi-head log?
 be adapted to the multiple write streams.??(我的论文回答)
 论文图evaluation fig.6
+3.inode，node
 
 
 =========my question=========
@@ -73,3 +74,9 @@ The paper creates the NAT(Node Address Table) to record the location of a specif
 
 3. What is the design rationale of multi-head logging? How does F2FS separate cold/hot data?
 The design rationale of multi-head logging is to provide six logs for writing, which can be adapt to the multiple write streams. F2FS separate the data into hot data, which is directory entry blocks, and cold data, which is data blocks moved by cleaning, cold data blocks specified by users and multimedia file data.
+
+
+=========review============
+flash靠FTL寻址
+
+所有的metadata都是放在一起的

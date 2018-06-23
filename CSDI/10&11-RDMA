@@ -40,3 +40,4 @@ RDMA key-value store-friendly storage:
 1. serializability ? linearizability?
 2. 为什么chaining hashTable适用于当前场景？什么是chaining hashtable？location-based caching？
 3. HTM的语义到底是什么，到底怎么检测到conflict并abort的
+4. fig2. c/d都会被abort，因为在commit阶段，local的htm会发现自己的变量已经被rdma操作
