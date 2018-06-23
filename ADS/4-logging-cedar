@@ -1,0 +1,30 @@
+redo-only logging
+规则：
+1. 在做真正的修改前append redo-log
+2. 未commit的事务不能flush修改
+
+how to log
+1.(重复)append redo-log
+2.写commit
+3.flush修改(any time/order)
+------------------------------
+
+
+undo-only logging
+规则：
+1. 在做真正的修改前append redo-log
+2. 必须在commit之前完成flushing修改
+
+how to log
+1.append redo-log
+2.(goto “1”)flush修改(ASAP)
+3.写commit
+------------------------------
+
+============paper=============
+WAL-write ahead log
+FSD = WAL + redo + checkpoint
+
+
+============question===============
+1. log记得是操作还是数值？

@@ -1,0 +1,60 @@
+2PC-2 phase commit
+phase1:voting-准备投票是否要commit还是要abort
+phase2:committing-commit或abort
+
+1.voting/prepare:
+    要求：participant机器要记住他们最后选择commit还是abort
+    participant接收到消息(TC问participants是否commit)，object仍锁住,并回复，回复的决定需durable
+2.committing:
+    要求：TC机器要记住他们最后decision选择commit还是abort
+    participant接收到TC叫他们commit/abort
+
+termination protocol(p-participant)
+若TC在voting之后没有应答后且p1选择了yes，他就会将自己的状态发给p2，p2回复
+1.收到TC-commit/abort，p1照做
+2.p2还没有回复:?
+3.p2投票no，p1则abort
+4.p2投票yes:?
+
+crash and reboot
+TC重启后：
+    没有commit->doAbort
+    有commit->doCommit
+Participant重启后:
+    没有yes->abort
+    有yes->使用termination protocol
+
+每个participant通过2PL/snapshot isolation来读写object，通过2PC来commit
+
+TC-transation coordinator
+1. 开始Transaction
+2. 负责commit/abort
+
+保持正确性：
+1. 有人commit，就没人abort
+2. 有人abort，就没人commit
+
+==========paper(Sinfonia)==========
+Sinfonia是一个shared data storage system
+扩展到多服务器，处理数据分割，保证replica的consitency
+目标：减少系统programmer在开发上的浪费
+
+Mini-transactions
+- A lightweight, short-lived type of transaction
+- Over unstructured data
+- 相比于普通的transaction: 先操作数据，执行prepare，执行commit/abort
+- Mini-transaction：将prepare与exec绑定，减少消息传递
+
+mini-transaction有三个api：
+cmp用于check数据、如果match的话
+    read来恢复数据？
+    write来修改数据
+
+crash发生：
+1. TC发生crash：重启一个TC，由TC询问participants是否都是yes，全yes则commit，否则abort
+2. participant(memory node)发生crash：暂停Sinfonia,反正没有memory node的话也没办法继续对数据进行操作
+
+Sinfonia由底层的SinfoniaFS(NFS)支持，将每个NFS的操作作为一个mini-transaction进行执行。
+
+==========problem==========
+pp2.12 termination protocol每种情况的结果

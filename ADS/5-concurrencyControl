@@ -1,0 +1,31 @@
+2PL-2 phase lock
+phase1:growing phase(持有锁增加)-acquire
+phase2:shrinking phase(持有锁减少)release
+
+如何避免死锁：
+1. 以相同顺序拿锁
+2. 当timeout即检测到死锁时，abort掉其中一个参与的transaction
+
+锁的几种奇怪现象：
+1. dirty-read/脏读：读到一个未commit的值，当该值rollback后，这个值就是未曾存在的值
+2. (non/un)-reapeatable/fuzzy read: T1读取X，当T2修改或者删除X并commit后，T1再读X后就得到一个修改后的值或者发现值被删除了。
+3. Phantom(幻象)：当T1在以某个条件读某个表时得到S，因为T2添加了符合该条件的条目s并commit，导致T2再读一次表时读的值为S+s。跟第一次不一样。
+
+
+ANSI SQL isolation级别definition
+read-uncommitted：123都可能出现，事务读到还没有commit的值
+read-committed: 23可能出现，事务读到删除或修改后的commit的值
+repeat-able-read: 3可能出现，事务读到新添加并commit的值
+anomaly serializable: 123皆不出现
+
+locking-based approach 过渡：
+1.全局锁在start时拿取，在commit后放锁--太慢
+2.1对单个object读写前拿锁，读写后放锁--不serializability
+2.2对单个object写前拿锁commit后放锁，读前拿锁读后放锁--写锁持有太久，对1的改进就是不用互斥锁
+3.MVCC(multi-version-concurrency-control):写到buffer里，读一份snapshot ，当没有write-write冲突就commit
+
+==========doubt============
+ppt.36
+napshot isolation与serializability不同之处是因为一种anomaly:
+由于snapshot的出现导致事务只能读到start之前commit的值，所以没办法变成serializability???
+我自己的回答答案：读到的不一定是最新的值，可能这个值被commit更新过了，但是由于SI只能读start之前的snapshot导致值不是最新的。

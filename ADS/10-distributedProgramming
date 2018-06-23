@@ -1,0 +1,40 @@
+=========MapReduce=========
+Google提出的Programming Model
+
+Map：对数据集中的每个数据进行操作
+Reduce：对map的结果进行合并
+
+MR的执行步骤：
+1. 将输入文件分成M份shard
+2. fork执行进程：1个master+若干worker
+    worker可以执行map/reduce
+        map-worker工作在shard上
+        reduce-worker工作在过程文件中(map产生的中间结果文件)
+3. map：
+    3.1 读取shard
+    3.2 格式化到key-value对
+    3.3 对每个键值对应用map func，并将结果buffer在memory中
+4. 生成中间结果文件：将memory中的中间结果写到disk上，并将其拆分成R份partition。
+    4.0 根据键值对排序让可以被reduce的记录放在一起
+    4.1 通知master关于存放位置
+    4.2 master将位置信息告诉reducer
+5. reducer通过rpc从mapper处取数据进行执行
+    5.1 对数据按照reduce func进行合并
+    5.2 将合并结果输出为1个文件，总共R个reducer就有R份文件
+6. return to user
+
+通过GFS对数据进行存放
+
+fault tolerance：
+1. workerfailed-master依次ping各个worker：failed worker的任务就重新执行
+2. masterfailed-GFS将master的state持久化到checkpoint，reboot后继续任务
+
+当有拖慢者时，将任务分给backup做，谁先做完就win
+
+Drayd
+微软做的
+
+与mapReduce相同，专注在throughput而不是latency
+思想：大多数的程序都可以用数据流图来进行表示，Drayd的任务就是处理这个有向无环图
+Drayd相比于mapReduce最大的优点就是：mapReduce当大任务分成小任务时，只能依次执行mapReduce的过程，非常不灵活，而Drayd可以随意拼接自己的计算vertex来适应各种数据流向。
+
