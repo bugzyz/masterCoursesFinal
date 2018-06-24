@@ -1,0 +1,32 @@
+多核的崛起
+NUMA(Non Uniform Memory Access Architecture)
+NUCA(Non Uniform CPU?? Access Architecture)
+Phoenix，一个实现NUMA的shared-memory的mapReduce
+问题：-将所有input file都load进内存  
+     -通过多线程对整个input file同时进行处理，因此产生了很多cache miss
+     -严格的依赖barrier，CPU在phase交接时处于idle状态
+
+因此，提出了Tiled-MapReduce的基于Phoenix-runtime的Ostrich系统
+实现：
+-tiling strategy
+    -将MR的任务切分成独立的sub-task，迭代的执行sub-task
+-model：
+    -原来是map->reduce
+    -现在(map->combine)->(map->combine)->...->reduce->merge->end
+    -上述新的model将原来的reduce改成了combine，每个(map->reduce)是sub-task的一次迭代，新的reduce则负责将部分结果reduce一下，再由merge合并结果
+    -优化
+        -OPT1=input memory reuse：每次combine的时候将下一次sub-task所需data加载进memory，每个sub-task只持有当前sub-task所需的data在memory里面(load-acquire/unload-release)
+            -且结果通过映射，减少对非当前sub-task的data的访问，减少cache miss??? ((PROBLEM))
+        -OPT2=Locality Optimization
+            -Memory Hierarchy：cross-chip指令很昂贵
+            -NUCA/NUMA-aware scheduler:减少对cache、memory的访问，每个sub-task运行在单个chip上，这样他们就不需要去访问别的chip的内存
+        -OPT3=cpu Optimization
+            -由于当前sub-task的combine阶段和下一sub-task的map阶段没有数据依赖，所以我们可以pipeline他们的执行，而不是每次(map->reduce(combine))后就barrier
+-fault tolerance
+优化：
+-input数据reuse
+-NUCA/NUMA的调度
+-软件pipeline
+
+============problem============
+ppt.54 是否有上面的这个优化?"-结果通过映射，减少对非当前sub-task的data的访问，减少cache miss"，我记得大爷说过
