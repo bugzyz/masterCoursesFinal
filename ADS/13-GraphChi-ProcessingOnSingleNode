@@ -1,0 +1,23 @@
+disk-based的graph computation问题：
+1. 随机存取不可避免，但会有overhead
+
+==========paper(GraphChi)==========
+PSW:Parallel Sliding Windows
+为了挖掘最大限度的顺序读写，而不是随机读写这种会造成overhead的方式
+
+针对的图数据是记录边(src-dest-value)的,PSW每次处理一个sub-graph，它将图(根据dest切分+根据src排序)成p份能够装进memory的shard。
+
+处理过程：
+1. load：按照当前处理的vertice来顺序load数据
+2. compute：计算
+3. write：commit结果
+    -由于write的地方之后就是下一次slide过去的部分，所以减少随机存取-asynchronous???
+
+Evolving Graphs:演化图-在计算中类似流的(计算中会增加或移除边)
+Graphs whose structure changes over time
+
+GraphChi通过给每个shard都添加一个buffer，通过buffer来flag一个边的新增或移除，当buffer慢了，写入磁盘
+
+==========problem==========
+ppt.23 处理过程中write为什么asynchronous
+ppt.49 PSW is Asynchronous???
