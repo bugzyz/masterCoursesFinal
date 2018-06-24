@@ -1,0 +1,39 @@
+不同系统的fault-tolerance
+mapReduce:由于复杂的数据依赖关系，直接重新执行任务
+Spark：使用粗粒度的来恢复数据集，但我们实际要的是单个vertex的细粒度恢复
+当前常见的对graph-computation的fault-tolerance技术：
+    –Checkpoint
+    –Trinity, PowerGraph, Pregel, etc.
+
+checkpoint的问题：
+1. large overhead
+    1.1. 需要写很多state信息
+    1.2. 同步overhead
+2. slow recovery
+    2.1. 需要standby的机器来恢复，读取durable的checkpoint需要IO
+
+============paper(Imitatir)============
+
+本文章提出Imitator，一个基于replication的fault-tolerance方案
+Imitator发现：其实我们有很多replica的vertex
+    -重用原先的replica：overhead小
+    -replica分布在各个机器上：recovery时间少
+运行过程中可能有两个地方可能会发生crash，需要recovery
+    1. 计算过程中crash：在计算完成后enterBarrier并进行state判断， crash的话就rollback并recovery
+    2. commit前crash，commit完成后对state判断，crash的话就recovery
+
+selfish vertex:对于pagerank来说的话，只有in-edge的vertex
+recovery：由于他们不会影响其他人，所以就对他们重新计算即可
+
+vertex with mirror：都有metadata
+recovery:
+    -master crash：由mirror对master进行mirros和master的recovery
+    -mirror crash：由master进行recovery，因为master有metadata
+
+recovery的方式
+    -rebirth：重新在一台机器上部署crash的vertex
+        -需要standby机器或者一个新的机器，所以migration也是一个好选择
+    -migration：将crash的数据恢复到原来就有该vertex的其他的机器上
+        -会造成这些目标机器比较大的workload(我自己加的)
+
+recovery后不一致的话：就重新activate一下，重新计算(重新计算我自己加的)
