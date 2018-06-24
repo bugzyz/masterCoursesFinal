@@ -1,1 +1,28 @@
-11
+Pregel
+BSP(Bulk Synchronous Parallel) model 
+先计算 -> 消息传递 -> 同步 ->
+
+Graphlab
+BSP的问题：
+1. 每次都要分析所有顶点，而异步的每次只需要分析变化的顶点
+2. 由于BSP每次都要同步，当有拖慢者时整个BSP都很慢
+
+Graphlab的实现:
+1.所有数据存在memory中，提高存取速度
+2.使用紧密结构array存数据结构
+3.分割顶点来distributed(有待商榷)
+
+consitency rule：
+Full-consitency：
+    读写权限都要[vertex1--edge1--vertex--edge2--vertex2]
+    才能执行用户定义的applying function
+edge-consitency：
+    读权限需要[vertex1--edge1--vertex--edge2--vertex2]
+    写权限需要[edge1--vertex--edge2]
+    才能执行用户定义的applying function
+vertex-consitency:
+    读权限需要[edge1--vertex--edge2]
+    写权限需要[vertex]
+    才能执行用户定义的applying function
+提供不同的consistency供用户根据自己的算法选择那种consistency
+Graphlab的染色(chromatic engine)系统就是通过用户选择的consitency rule来对相应范围的顶点、边进行染色，不同颜色的不能overlap

@@ -1,0 +1,37 @@
+graph-parallel processing
+
+Think as a vertex：指我们不切割vertex，切割edge后我们需要通过edge来做communication
+example: pageRank
+
+但天然图大多数都是倾斜的，这导致某些顶点有非常大的数据，这就导致了不平衡的workload，导致更重的传输，和更高的冲突
+locality：使需处理的数据本地可存取，减少网络开销
+parallel：平衡workload来避免不平衡
+对于倾斜的图来说，这两个问题是存在冲突的
+
+pregel和graphlab：
+-分割：专注与挖掘局部性，使用edge-cut的方式切割数据，将一个vertex的所有数据放在一台机器上，将vertex分配到不同edge上
+-计算：聚集vertex的所有数据到本地机器上
+
+powerGraph和GraphX：
+-分割：专注与挖掘并行性，使用vertex-cut将edge分配到不同master、mirror的vertex上
+-计算：将workload(vertex总workload)分解到不同机器上
+
+=======paper(powerLyra)=======
+powerLyra
+-分割：提出Ginger这个启发式的hybrid的方式
+    -hi-degree的vertex的采用vertex-cut提高并行性，平衡workload
+    -lo-degree的采用edge-cut保证局部性，减少communication
+    -执行的方式就是先对图中vertex的边进行计算，分为lo和hi，为hi添加mirror
+-优化communication：GAS model
+    hi-deg(vertex-cut):comm-cost <= 4*mirrors
+        -G(gather):将其他mirror/neighbor-vertex计算的结果收集
+        -A(apply):开始根据自己和其他相关数据算
+        -S(scatter):将结果分发给其他mirror/neighbor-vertex
+    lo-deg(edge-cut):comm-cost <= 1*mirrors
+        -master的G的数据都在，所以不需要G，只需要A，并且在最后S一下
+        -mirror只有scatter阶段，因为他们不需要算，只需要拿到数据，供与他相连的vertex来算。
+
+
+========problem========
+ppt.16 edge-cut没有duplicated的edge吗
+解答：采用单方向，也就是每个vertex当有edge时只采用out/in edge。
