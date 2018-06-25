@@ -1,7 +1,38 @@
 词汇：
 DSM-distrubuted shared memory
+========paper(ivy)========
 
+搞懂一下：
+read/write operation
+
+synchronize protocol
+update-based protocol
+modification-based protocol
+
+eager/lazy RC
+eager: 每次release都会同志别人
+lazy：只有在读的时候，acquire lock的时候才会问别人这个值是否有更改
+
+multiple write protocol：
+twinning
+
+R1. each processor issues requests in the order specified by the program
+□ Don’t issue the next request unless the
+□ Writes occur in a
+  finished are served from a single
+previous one has
+R2. requests to an individual memory location
+ FIFO queue single order
+   □ Once a read 
+    it’s ordered
+observes the effect of a write behind that write
+
+vector/lamport timestamp
 
 ==========question==========
 1. ppt.21 - 为什么需要WC
+
 2. ppt.29 false sharing
+对于同一个页的不同变量，用这个办法会导致不断pingpong去invalidate掉别人的页
+
+3. 看一下课后习题：ivy-code.txt is a version of the code in Section 3.1 with some clarifications and bug fixes. The write fault handler ends by sending a confirmation to the manager, and the "Write server" code in the manager waits for this confirmation. Suppose you eliminated this confirmation (both the send and the wait) from the system. Describe a scenario in which lack of the confirmation would cause the system to behave incorrectly. You should assume that the network delivers all messages, and that none of the computers fail.

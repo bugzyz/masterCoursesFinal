@@ -1,0 +1,35 @@
+GFS提供透明服务
+stateful
+stateless
+write-through
+delay-write:赞一波
+预取：可以预取到接下来要读到的数据
+
+NFS
+各种
+如何使用：先挂载，通过RPC
+比本地慢，有cache，server端write-through
+解决文件一致性的问题，文件都有timestamp，定期超时
+
+GFS
+scalable
+假设很少有随机
+面向提高throughput
+master-chunkServers
+master：metadata，namespace
+chunk：存数据，默认数据存3份
+
+master有shadow master，作为master的backup
+master周期性给chunk发心跳
+chunk，client都不cache data，不然会很麻烦
+
+问题：
+不会持久化存chunk的location？知道那个chunkserver跟他钥？？？？
+
+
+chubby
+master：有个租约，只要它活着就可以无限延期
+／ls ： lock server·
+／cell：一系列。。？？
+／。。。
+

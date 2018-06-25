@@ -1,0 +1,37 @@
+========eventual consistency========
+允许某一时刻读到一个旧值
+有一个地方写总比没地方写好
+
+sequential：
+悲观，必须串行
+
+eventual：
+乐观，先让update执行，之后担心能不能把他们串行化
+
+搞懂：
+sequential， strict serializability-全局时间，？？？
+
+eventual consistency:
+可能出现写写conflict
+staleread可能丢失causality
+
+之前的solution：
+采用一个server来决定先后，bottleneck
+
+现在：
+solution：
+难点：怎么排序
+解决：timestamp(用的是本地的时间)和node.id来判断谁先谁后
+新难点：当不行的时候
+解决：rollback加replay
+
+logical clock
+我们使用因果时间戳使用lamport时间戳
+看一下这边
+
+搞懂：
+COPS-为因果加关系
+当我们发送操作时，要发送依赖，当依赖都到达的时候，才能执行
+dependency：
+put：在本地先put，之后执行put_after(在put的基础上加上依赖deps)，causal：当全部依赖到达时，才能够执行
+get：需要gets-from和transitivy？？

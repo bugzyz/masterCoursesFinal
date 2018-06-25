@@ -1,6 +1,7 @@
 Pregel
 BSP(Bulk Synchronous Parallel) model 
 先计算 -> 消息传递 -> 同步 ->
+(先计算 -> 消息传递 -> 同步 )是一次superstep
 
 Graphlab
 BSP的问题：

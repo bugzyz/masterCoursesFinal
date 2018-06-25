@@ -20,6 +20,9 @@ how to log
 2.(goto “1”)flush修改(ASAP)
 3.写commit
 ------------------------------
+recovery的步骤
+
+
 
 ============paper=============
 WAL-write ahead log
